@@ -13,7 +13,7 @@ module.exports = {
   module: {
     rules: [
       {
-        test: path => ['.glsl', '.frag', '.vert'].reduce((acc, cur) => acc || path.includes(cur), false),
+        test: /\.(glsl|frag|vert)$/,
         use: 'raw-loader'
       }
     ]
