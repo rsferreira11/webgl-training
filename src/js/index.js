@@ -31,54 +31,44 @@ function createProgram(gl, vertexShader, fragmentShader) {
   return null;
 }
 
-const setRectangle = (gl, x, y, width, height) => {
-  var x1 = x;
-  var x2 = x + width;
-  var y1 = y;
-  var y2 = y + height;
-  gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    x1, y1,
-    x2, y1,
-    x1, y2,
-    x1, y2,
-    x2, y1,
-    x2, y2,
-  ]), gl.STATIC_DRAW);
-}
-
 export const executeShader = (gl, image) => {
-  console.log(vertexShaderSource);
-  console.log(fragmentShaderSource);
-
   const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
   const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
   const program = createProgram(gl, vertexShader, fragmentShader);
 
-  // Attributes
-  const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
-  const texCoordAttributeLocation = gl.getAttribLocation(program, "a_texCoord");
-
-  // Uniforms
-  const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
-  const imageLocation = gl.getUniformLocation(program, "u_image");
-
   // Create a Vertex Array Object
   const vao = gl.createVertexArray();
-
-  // Work with the vao
   gl.bindVertexArray(vao);
 
-  // Create a buffer and put a single pixel space rectagle in it
+  // Attributes
+  const positionAttributeLocation = gl.getAttribLocation(program, "a_position");
+
   const positionBuffer = gl.createBuffer();
-
-  // Turn on the attribute
-  gl.enableVertexAttribArray(positionAttributeLocation);
-
-  // Bind it to ARRAY_BUFFER (Think of it as ARRAY_BUFFER = Position Buffer)
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+  gl.bufferData(
+    gl.ARRAY_BUFFER,
+    new Float32Array([
+      0,   360,
+      640, 0,
+      640, 360,
 
-  // Tell the attribute how to get data out of position buffer
+      0,   360,
+      640, 360,
+      640, 720,
+
+      640, 360,
+      1280, 360,
+      640, 720,
+
+      640, 360,
+      640, 0,
+      1280, 360
+    ]),
+    gl.STATIC_DRAW
+  );
+
+  gl.enableVertexAttribArray(positionAttributeLocation);
   gl.vertexAttribPointer(...Object.values({
     attributeLocation: positionAttributeLocation,
     size: 2,
@@ -88,20 +78,29 @@ export const executeShader = (gl, image) => {
     offset: 0,
   }));
 
-
   // Provide texture coordinates for the rectangle
+  const texCoordAttributeLocation = gl.getAttribLocation(program, "a_texCoord");
   const texCoordBuffer = gl.createBuffer();
   gl.bindBuffer(gl.ARRAY_BUFFER, texCoordBuffer);
   gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
-    0.0, 0.0,
-    1.0, 0.0,
-    0.0, 1.0,
-    0.0, 1.0,
-    1.0, 0.0,
-    1.0, 1.0
-  ]), gl.STATIC_DRAW);
-  gl.enableVertexAttribArray(texCoordAttributeLocation);
+    0.0, 0.5,
+    0.5, 0.0,
+    0.5, 0.5,
 
+    0.0, 0.5,
+    0.5, 0.5,
+    0.5, 1.0,
+
+    0.5, 0.5,
+    1.0, 0.5,
+    0.5, 1.0,
+
+    0.5, 0.5,
+    0.5,   0,
+    1.0, 0.5,
+  ]), gl.STATIC_DRAW);
+
+  gl.enableVertexAttribArray(texCoordAttributeLocation);
   gl.vertexAttribPointer(...Object.values({
     attributeLocation: texCoordAttributeLocation,
     size: 2,
@@ -113,31 +112,25 @@ export const executeShader = (gl, image) => {
 
   // Create Texture
   const texture = gl.createTexture();
-
   gl.activeTexture(gl.TEXTURE0 + 0);
-
   gl.bindTexture(gl.TEXTURE_2D, texture);
 
-  // Set the parameters so we don't need mips and so we're not filtering
-  // and we don't repeat
+  // Set the Texture to not to repeat
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+
+  // Set mipmap to not use it
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 
   // Upload the image into the texture
-  const mipLevel = 0;
-  const internalFormat = gl.RGBA;
-  const srcFormat = gl.RGBA;
-  const srcType = gl.UNSIGNED_BYTE;
-  gl.texImage2D(
-    gl.TEXTURE_2D,
-    mipLevel,
-    internalFormat,
-    srcFormat,
-    srcType,
-    image
-  );
+  gl.texImage2D(...Object.values({
+    textureType: gl.TEXTURE_2D,
+    mipLevel: 0,
+    internalFormat: gl.RGBA,
+    srcFormat: gl.RGBA,
+    srcType: gl.UNSIGNED_BYTE,
+    domImage: image
+  }));
 
   // Tell webgl how to convert from clipspace to pixels
   gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
@@ -147,31 +140,31 @@ export const executeShader = (gl, image) => {
   gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
   gl.useProgram(program);
-  gl.bindVertexArray(vao);
 
+  // Uniforms
+  const resolutionLocation = gl.getUniformLocation(program, "u_resolution");
   gl.uniform2f(resolutionLocation, gl.canvas.width, gl.canvas.height);
+
+  const imageLocation = gl.getUniformLocation(program, "u_image");
   gl.uniform1i(imageLocation, 0);
-
-  gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
-
-  setRectangle(gl, 0 , 0, image.width, image.height);
 
   const primitiveType = gl.TRIANGLES;
   const offset = 0;
-  const count = 6;
+  const count =  12;
   gl.drawArrays(primitiveType, offset, count);
 }
 
 const canvas = createCanvas();
 document.body.appendChild(canvas);
 
-var gl = canvas.getContext("webgl2");
+const gl = canvas.getContext("webgl2");
 if (!gl) {
   alert('Your browser does not support webGl 2');
 }
-
-var image = new Image();
-image.src = "images/demo.jpg";
-image.onload = function () {
-  executeShader(gl, image);
+else {
+  const image = new Image();
+  image.src = "images/demo.jpg";
+  image.onload = function () {
+    executeShader(gl, image);
+  }
 }
