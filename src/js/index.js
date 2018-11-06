@@ -155,7 +155,7 @@ export const executeShader = (gl, image) => {
   gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
   setRectangle(gl, 0 , 0, image.width, image.height);
-  
+
   const primitiveType = gl.TRIANGLES;
   const offset = 0;
   const count = 6;
@@ -171,7 +171,7 @@ if (!gl) {
 }
 
 var image = new Image();
-image.src = "http://localhost:3000/images/demo.jpg";  // MUST BE SAME DOMAIN!!!
+image.src = "images/demo.jpg";
 image.onload = function () {
   executeShader(gl, image);
 }
