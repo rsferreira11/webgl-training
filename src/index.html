@@ -20,10 +20,37 @@
       justify-content: center;
       align-items: center;
     }
+
+    .content {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .content h2 {
+      font-size: 3em;
+      margin-bottom: 0.5em;
+    }
+
+    .content a {
+      font-size: 2em;
+      color: #0060B6;
+    }
+
+    .content li {
+      list-style: none;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
-  <script src="main.js">
-  </script>
+  <div class="content">
+    <h2>WebGL 2</h2>
+    <ul>
+      <li><a href="examples/texture-example/index.html">Texture Exemple</a></li>
+      <li><a href="examples/two-dimensions-transform/index.html">2D Transformations</a></li>
+    </ul>
+  </div>
 </body>
 </html>

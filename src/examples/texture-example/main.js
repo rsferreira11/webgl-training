@@ -1,7 +1,7 @@
-import fragmentShaderSource from '../shaders/baseShader.frag';
-import vertexShaderSource from '../shaders/baseShader.vert';
+import fragmentShaderSource from './shader.frag';
+import vertexShaderSource from './shader.vert';
 
-import { createCanvas } from './utils/createCanvas';
+import { createCanvas } from 'utils/createCanvas';
 
 function createShader(gl, type, source) {
   const shader = gl.createShader(type);
@@ -31,7 +31,7 @@ function createProgram(gl, vertexShader, fragmentShader) {
   return null;
 }
 
-export const executeShader = (gl, image) => {
+const executeShader = (gl, image) => {
   const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexShaderSource);
   const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentShaderSource);
 
@@ -154,17 +154,19 @@ export const executeShader = (gl, image) => {
   gl.drawArrays(primitiveType, offset, count);
 }
 
-const canvas = createCanvas();
-document.body.appendChild(canvas);
+export const setup = function() {
+  const canvas = createCanvas();
+  document.body.appendChild(canvas);
 
-const gl = canvas.getContext("webgl2");
-if (!gl) {
-  alert('Your browser does not support webGl 2');
-}
-else {
-  const image = new Image();
-  image.src = "images/demo.jpg";
-  image.onload = function () {
-    executeShader(gl, image);
+  const gl = canvas.getContext("webgl2");
+  if (!gl) {
+    alert('Your browser does not support webGl 2');
+  }
+  else {
+    const image = new Image();
+    image.src = "demo.jpg";
+    image.onload = function () {
+      executeShader(gl, image);
+    }
   }
 }

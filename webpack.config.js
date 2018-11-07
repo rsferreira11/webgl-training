@@ -1,8 +1,7 @@
 const path = require('path')
-const webpack = require('webpack')
 
 module.exports = {
-  entry: path.join(__dirname, 'src', 'js', 'index.js'),
+  entry: path.join(__dirname, 'src', 'index.js'),
   mode: 'development',
   devServer: {
     contentBase: path.join(__dirname, 'src'),
@@ -17,5 +16,8 @@ module.exports = {
         use: 'raw-loader'
       }
     ]
+  },
+  resolve: {
+    modules: [ path.resolve(__dirname, 'src'), 'node_modules' ]
   }
 }
